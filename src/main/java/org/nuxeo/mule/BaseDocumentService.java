@@ -6,6 +6,7 @@ import org.mule.api.annotations.Category;
 import org.mule.api.annotations.Processor;
 import org.mule.api.annotations.display.FriendlyName;
 import org.mule.api.annotations.display.Placement;
+import org.mule.api.annotations.oauth.OAuthProtected;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.InboundHeaders;
 import org.mule.api.annotations.param.Optional;
@@ -52,6 +53,7 @@ public class BaseDocumentService {
      * @throws Exception if operation can not be executed
      */
     @Processor
+    @OAuthProtected
     @Category(name = "CRUD", description = "fetch a Document")
     public Document getDocument(@Placement(group = "operation parameters")
     @FriendlyName("Document Reference (docRef)")
@@ -69,6 +71,7 @@ public class BaseDocumentService {
      * @throws Exception if operation can not be executed
      */
     @Category(name = "CRUD", description = "fetch the Root Document")
+    @OAuthProtected
     @Processor
     public Document getRootDocument() throws Exception {
         return getDocument("/");

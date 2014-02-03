@@ -3,7 +3,6 @@
     <global-element name="Nuxeo" type="http://www.mulesoft.org/schema/mule/nuxeo/config" entity-id="Nuxeo#1">
         <properties>
             <property name="port"/>
-            <property name="username" value="Administrator"/>
             <property name="protocol"/>
             <property name="defaultSchemas" value="dublincore,common,file,files,note"/>
             <property name="name" value="Nuxeo"/>
@@ -11,7 +10,6 @@
             <property name="pollingInterval"/>
             <property name="contextPath"/>
             <property name="serverName"/>
-            <property name="password" value="Administrator"/>
             <property name="auxiliary;index" value="1"/>
             <property-collection name="@http://www.mulesoft.org/schema/mule/nuxeo/connection-pooling-profile;0">
                 <property name="exhaustedAction" value="WHEN_EXHAUSTED_GROW"/>

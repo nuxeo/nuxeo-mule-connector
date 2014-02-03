@@ -11,28 +11,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.ConnectionException;
 import org.mule.api.MuleException;
 import org.mule.api.annotations.Category;
 import org.mule.api.annotations.Configurable;
-import org.mule.api.annotations.Connect;
-import org.mule.api.annotations.ConnectionIdentifier;
 import org.mule.api.annotations.Connector;
-import org.mule.api.annotations.Disconnect;
 import org.mule.api.annotations.MetaDataKeyRetriever;
 import org.mule.api.annotations.MetaDataRetriever;
 import org.mule.api.annotations.Processor;
 import org.mule.api.annotations.Source;
 import org.mule.api.annotations.SourceThreadingModel;
 import org.mule.api.annotations.Transformer;
-import org.mule.api.annotations.ValidateConnection;
 import org.mule.api.annotations.display.FriendlyName;
 import org.mule.api.annotations.display.Password;
 import org.mule.api.annotations.display.Placement;
 import org.mule.api.annotations.display.Summary;
 import org.mule.api.annotations.lifecycle.Start;
 import org.mule.api.annotations.lifecycle.Stop;
+import org.mule.api.annotations.oauth.OAuth2;
+import org.mule.api.annotations.oauth.OAuthAccessToken;
+import org.mule.api.annotations.oauth.OAuthConsumerKey;
+import org.mule.api.annotations.oauth.OAuthConsumerSecret;
+import org.mule.api.annotations.oauth.OAuthPostAuthorization;
 import org.mule.api.annotations.param.ConnectionKey;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.InboundHeaders;
@@ -46,6 +48,8 @@ import org.nuxeo.ecm.automation.client.AutomationClient;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.adapters.DocumentService;
 import org.nuxeo.ecm.automation.client.jaxrs.impl.HttpAutomationClient;
+import org.nuxeo.ecm.automation.client.jaxrs.spi.Request;
+import org.nuxeo.ecm.automation.client.jaxrs.spi.RequestInterceptor;
 import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.DocRef;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -71,9 +75,64 @@ import org.nuxeo.mule.poll.ListenerConfig;
  *
  */
 @Connector(name = "nuxeo", schemaVersion = "1.0-SNAPSHOT")
+@OAuth2(authorizationUrl = "http://localhost:8080/nuxeo/oauth2/authorization", accessTokenUrl = "http://localhost:8080/nuxeo/oauth2/token")
 public class NuxeoConnector extends BaseDocumentService {
 
     private static final Logger logger = Logger.getLogger(NuxeoConnector.class);
+
+    /**
+     * AccessToken
+     */
+    @OAuthAccessToken
+    public String accessToken;
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    private String instanceId;
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    /**
+     * Client Id
+     */
+    @OAuthConsumerKey
+    @Configurable
+    public String consummerId;
+
+    /**
+     * Client Secret
+     */
+    @OAuthConsumerSecret
+    @Configurable
+    public String consummerSecret;
+
+    public String getConsummerSecret() {
+        return consummerSecret;
+    }
+
+    public void setConsummerSecret(String consummerSecret) {
+        this.consummerSecret = consummerSecret;
+    }
+
+    public String getConsummerId() {
+        return consummerId;
+    }
+
+    public void setConsummerId(String consummerId) {
+        this.consummerId = consummerId;
+    }
 
     /**
      * Nuxeo Server name (IP or DNS name)
@@ -256,7 +315,7 @@ public class NuxeoConnector extends BaseDocumentService {
      * @param password Nuxeo password
      * @throws ConnectionException
      */
-    @Connect
+    // @Connect
     public void connect(@ConnectionKey
     String username, @Password
     String password) throws ConnectionException {
@@ -271,7 +330,7 @@ public class NuxeoConnector extends BaseDocumentService {
     /**
      * Disconnect
      */
-    @Disconnect
+    // @Disconnect
     public void disconnect() {
         if (session != null) {
             session.close();
@@ -283,9 +342,9 @@ public class NuxeoConnector extends BaseDocumentService {
      *
      * @return true if an Automation Session is active
      */
-    @ValidateConnection
+    // @ValidateConnection
     public boolean isConnected() {
-        return (session != null);
+        return (session != null && StringUtils.isNotBlank(accessToken));
     }
 
     /**
@@ -293,7 +352,7 @@ public class NuxeoConnector extends BaseDocumentService {
      *
      * @return fake ConnectionId based on serverUrl and username
      */
-    @ConnectionIdentifier
+    // @ConnectionIdentifier
     public String connectionId() {
         if (session != null) {
             return getServerUrl() + session.getLogin();
@@ -456,8 +515,8 @@ public class NuxeoConnector extends BaseDocumentService {
     @Optional
     Object input, @Optional
     @Placement(group = "operation parameters")
-    Map<String, String> params,
-    @InboundHeaders("*") final Map<String, Object> inbound) throws Exception {
+    Map<String, String> params, @InboundHeaders("*")
+    final Map<String, Object> inbound) throws Exception {
         OperationRequest request = session.newRequest(operationId);
         OperationDocumentation opDef = request.getOperation();
 
@@ -470,9 +529,9 @@ public class NuxeoConnector extends BaseDocumentService {
                     Object val = params.get("name");
                     // handle specific cases for properties
                     if (param.getType().equals("properties")) {
-                      if (val instanceof Map) {
-                          val = MapUnmangler.unMangle((Map<String, Object>)val);
-                      }
+                        if (val instanceof Map) {
+                            val = MapUnmangler.unMangle((Map<String, Object>) val);
+                        }
                     }
                     request.set(pname, val);
                     break;
@@ -505,10 +564,12 @@ public class NuxeoConnector extends BaseDocumentService {
      * @param input the {@link PropertyMap}, {@link Map} or {@link Blob}
      * @return the {@link InputStream} if any
      */
-    //@Transformer(sourceTypes = { PropertyMap.class, Map.class, Blob.class })
+    // @Transformer(sourceTypes = { PropertyMap.class, Map.class, Blob.class })
     @Processor
     @Category(name = "Dynamic Converters", description = "converts a Blob or a Map representing a Blob to a Stream")
-    public InputStream getAsStream(@Placement(group = "input (PropertyMap.class, Map.class, Blob.class)") Object input) {
+    public InputStream getAsStream(
+            @Placement(group = "input (PropertyMap.class, Map.class, Blob.class)")
+            Object input) {
         try {
             return BlobConverters.blobToStream(session, input);
         } catch (UnsupportedEncodingException e) {
@@ -518,17 +579,20 @@ public class NuxeoConnector extends BaseDocumentService {
     }
 
     /**
-     * Get an {@link Blob} from a {@link Map} of properties representing a Blob in the Document
+     * Get an {@link Blob} from a {@link Map} of properties representing a Blob
+     * in the Document
      *
      * {@sample.xml ../../../doc/Nuxeo-connector.xml.sample nuxeo:get-as-blob}
      *
      * @param input the {@link PropertyMap}, {@link Map}
      * @return the {@link InputStream} if any
      */
-    //@Transformer(sourceTypes = { PropertyMap.class, Map.class })
+    // @Transformer(sourceTypes = { PropertyMap.class, Map.class })
     @Processor
     @Category(name = "Dynamic Converters", description = "converts a Map representing a Blob to a Blob")
-    public Blob getAsBlob(@Placement(group = "input (PropertyMap.class, Map.class)") Object input) {
+    public Blob getAsBlob(
+            @Placement(group = "input (PropertyMap.class, Map.class)")
+            Object input) {
         try {
             return BlobConverters.mapToBlob(session, input);
         } catch (UnsupportedEncodingException e) {
@@ -536,7 +600,6 @@ public class NuxeoConnector extends BaseDocumentService {
             return null;
         }
     }
-
 
     /**
      * Register an event listener on the Nuxeo side that will callback Mule on
@@ -588,7 +651,6 @@ public class NuxeoConnector extends BaseDocumentService {
         return BlobConverters.fileToBlob(input);
     }
 
-
     /**
      * Creates a Blob from a String
      *
@@ -604,12 +666,10 @@ public class NuxeoConnector extends BaseDocumentService {
         return new NuxeoBlob(new StringBlob(input));
     }
 
-
     /**
      * Convert a Blob to a File
      *
-     * {@sample.xml ../../../doc/Nuxeo-connector.xml.sample
-     * nuxeo:blob-to-file}
+     * {@sample.xml ../../../doc/Nuxeo-connector.xml.sample nuxeo:blob-to-file}
      *
      * @param blob the input blob
      * @return the File extracted from the Blob
@@ -698,6 +758,7 @@ public class NuxeoConnector extends BaseDocumentService {
     public StopSourceCallback listenToEvents(
     /*
      * @Placement(group = "Events filtering") List<String> eventNames,
+     *
      * @Placement(group = "Events filtering") Map<EventFilter, String> filters,
      */final SourceCallback callback) {
 
@@ -745,6 +806,28 @@ public class NuxeoConnector extends BaseDocumentService {
     public MetaData getMetaData(MetaDataKey key) throws Exception {
         logger.info("retrieve metadata for " + key.getId());
         return getIntrospector().getMuleTypeMetaData(key.getId());
+    }
+
+    @OAuthPostAuthorization
+    public void postAuth() {
+        // logger.error("AccessToken: " + accessToken);
+
+        HttpAutomationClient client = new HttpAutomationClient(getServerUrl());
+        client.setRequestInterceptor(new RequestInterceptor() {
+            @Override
+            public void processRequest(
+                    Request request,
+                    org.nuxeo.ecm.automation.client.jaxrs.spi.Connector connector) {
+                request.put("Authorization", "Bearer " + accessToken);
+            }
+        });
+
+        session = client.getSession();
+
+        session.setDefaultSchemas(defaultSchemas);
+        docService = session.getAdapter(DocumentService.class);
+
+        logger.info("Connect Nuxeo Connector");
     }
 
 }

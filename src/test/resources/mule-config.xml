@@ -10,8 +10,7 @@
         http://www.mulesoft.org/schema/mule/nuxeo http://www.mulesoft.org/schema/mule/nuxeo/1.0-SNAPSHOT/mule-nuxeo.xsd
         http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
 
-  <nuxeo:config name="NuxeoServer" username="Administrator" protocol="http"
-    password="Administrator" serverName="localhost" port="18080"
+  <nuxeo:config name="NuxeoServer" protocol="http" serverName="localhost" port="18080"
     contextPath="" defaultSchemas="common,dublincore,file" >
         <nuxeo:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
     </nuxeo:config>
