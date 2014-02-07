@@ -70,7 +70,7 @@ import org.nuxeo.mule.poll.ListenerConfig;
  * @author <a href="mailto:tdelprat@nuxeo.com">Tiry</a>
  *
  */
-@Connector(name = "nuxeo", schemaVersion = "1.1-SNAPSHOT")
+@Connector(name = "nuxeo", schemaVersion = "1.1")
 public class NuxeoConnector extends BaseDocumentService {
 
     private static final Logger logger = Logger.getLogger(NuxeoConnector.class);
