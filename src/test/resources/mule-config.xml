@@ -7,7 +7,7 @@
   xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-        http://www.mulesoft.org/schema/mule/nuxeo http://www.mulesoft.org/schema/mule/nuxeo/1.0-SNAPSHOT/mule-nuxeo.xsd
+        http://www.mulesoft.org/schema/mule/nuxeo http://www.mulesoft.org/schema/mule/nuxeo/1.0/mule-nuxeo.xsd
         http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
 
   <nuxeo:config name="NuxeoServer" username="Administrator" protocol="http"
