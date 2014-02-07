@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.nuxeo.mule</groupId>
   <artifactId>nuxeo-mule-connector</artifactId>
@@ -13,7 +14,7 @@
     <mockito.version>1.9.5</mockito.version>
     <jdk.version>1.6</jdk.version>
     <nuxeo.version>5.8</nuxeo.version>
-    <!--<java7.home>/usr/lib/jvm/jdk1.7.0_10/</java7.home>-->
+    <!--<java7.home>/usr/lib/jvm/jdk1.7.0_10/</java7.home> -->
   </properties>
 
   <build>
@@ -67,7 +68,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <!--<jvm>${java7.home}/bin/java</jvm>-->
+            <!--<jvm>${java7.home}/bin/java</jvm> -->
           </configuration>
         </plugin>
         <plugin>
@@ -175,11 +176,11 @@
       <version>${mule.version}</version>
     </dependency>
     <!-- classes are private in this artifact !!!
-    <dependency>
+      <dependency>
       <groupId>org.mule.transports</groupId>
       <artifactId>mule-transport-file</artifactId>
       <version>${mule.version}</version>
-    </dependency>-->
+      </dependency> -->
     <dependency>
       <groupId>org.mule.tools.devkit</groupId>
       <artifactId>mule-devkit-annotations</artifactId>
@@ -266,7 +267,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!--  for Audit in tests -->
+    <!-- for Audit in tests -->
     <dependency>
       <groupId>org.nuxeo.ecm.platform</groupId>
       <artifactId>nuxeo-platform-audit-api</artifactId>
@@ -335,8 +336,6 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-
-
   </repositories>
 
   <pluginRepositories>
@@ -364,9 +363,96 @@
     </pluginRepository>
   </pluginRepositories>
 
+  <profiles>
+    <profile>
+      <id>release</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <inherited>true</inherited>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <updateReleaseInfo>true</updateReleaseInfo>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>nightly</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <repositories>
+        <repository>
+          <id>nightly-staging</id>
+          <url>http://maven.in.nuxeo.com/nexus/content/repositories/nightly-staging</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <distributionManagement>
+        <repository>
+          <id>nightly-staging</id>
+          <url>http://maven.in.nuxeo.com/nexus/content/repositories/nightly-staging</url>
+          <uniqueVersion>true</uniqueVersion>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
+
+  <distributionManagement>
+    <repository>
+      <id>public-releases</id>
+      <url>http://maven.in.nuxeo.com/nexus/content/repositories/public-releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>public-snapshots</id>
+      <url>http://maven.in.nuxeo.com/nexus/content/repositories/public-snapshots</url>
+      <uniqueVersion>true</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
+
   <scm>
-    <connection>scm:git:git://github.com/tiry/nuxeo-mule-connector.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com:tiry/nuxeo-mule-connector.git</developerConnection>
-    <url>https://github.com/tiry/nuxeo-mule-connector</url>
+    <connection>scm:git:git://github.com/nuxeo/nuxeo-mule-connector.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com:nuxeo/nuxeo-mule-connector.git</developerConnection>
+    <url>https://github.com/nuxeo/nuxeo-mule-connector</url>
   </scm>
+
 </project>
