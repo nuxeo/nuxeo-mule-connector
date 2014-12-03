@@ -45,11 +45,12 @@ public class DownloadClient {
     }
 
     public InputStream download(String urlPart) {
-        String parts[] = urlPart.split("\\?");
-        String uid = parts[0].substring(6);
-        String path = parts[1].split("=")[1];
-        path = URLDecoder.decode(path);
-        return download(uid, path);
+        
+        WebResource wr = client.resource(urlPart);
+        WebResource.Builder builder = wr.accept(APPLICATION_JSON);
+        ClientResponse response = builder.get(ClientResponse.class);
+
+        return response.getEntityInputStream();
     }
 
 }

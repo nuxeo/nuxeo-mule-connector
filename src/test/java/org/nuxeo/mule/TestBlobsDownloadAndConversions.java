@@ -3,6 +3,8 @@ package org.nuxeo.mule;
 import java.io.File;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +44,7 @@ public class TestBlobsDownloadAndConversions {
     @Test
     public void testBlobDownloadAndConvert() throws Exception {
 
+        ServletContext ctx;
         Session session = client.getSession("Administrator", "Administrator");
         Assert.assertNotNull(session);
 

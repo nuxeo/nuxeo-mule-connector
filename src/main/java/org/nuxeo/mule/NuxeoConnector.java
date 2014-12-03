@@ -5,6 +5,7 @@ package org.nuxeo.mule;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ import org.nuxeo.mule.poll.ListenerConfig;
  * @author <a href="mailto:tdelprat@nuxeo.com">Tiry</a>
  *
  */
-@Connector(name = "nuxeo", schemaVersion = "1.2-SNAPSHOT")
+@Connector(name = "nuxeo", schemaVersion = "1.2-SNAPSHOT", friendlyName="Nuxeo")
 public class NuxeoConnector extends BaseDocumentService {
 
     private static final Logger logger = Logger.getLogger(NuxeoConnector.class);
@@ -671,7 +672,10 @@ public class NuxeoConnector extends BaseDocumentService {
         logger.info("Stoping Nuxeo Connector");
         try {
             BlobConverters.cleanup();
-        } catch (Exception e) {
+        } catch (FileNotFoundException fnfe) {
+            // NOP
+        }
+         catch (Exception e) {
             logger.error("Error during cleanup", e);
         }
     }
