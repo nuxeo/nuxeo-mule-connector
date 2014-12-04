@@ -17,7 +17,7 @@
     <mule.devkit.version>3.5.1</mule.devkit.version>
     <junit.version>4.9</junit.version>
     <mockito.version>1.9.5</mockito.version>
-    <jdk.version>1.7</jdk.version>
+    <jdk.version>1.6</jdk.version>
     <nuxeo.version>6.0</nuxeo.version>
     <!--<java7.home>/usr/lib/jvm/jdk1.7.0_10/</java7.home> -->
   </properties>
@@ -354,7 +354,6 @@
      <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <scope>test</scope>
         <version>1.9</version>
       </dependency>
   </dependencies>
