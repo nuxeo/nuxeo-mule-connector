@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jackson.JsonNode;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +28,7 @@ import org.nuxeo.ecm.automation.test.EmbeddedAutomationServerFeature;
 import org.nuxeo.ecm.core.test.annotations.Granularity;
 import org.nuxeo.ecm.core.test.annotations.RepositoryConfig;
 import org.nuxeo.ecm.platform.audit.AuditFeature;
+import org.nuxeo.mule.metadata.TypeDefinitionFecther;
 import org.nuxeo.mule.poll.NuxeoSimpleEvent;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
@@ -162,6 +165,34 @@ public class NuxeoConnectorTest extends FunctionalTestCase {
         flow.stop();
     }
 
+    
+    @Test
+    public void testTypeFetcher() throws Exception {
+
+        client.setBasicAuth("Administrator", "Administrator");
+        Session session = client.getSession();
+        assertNotNull(session);
+        
+        TypeDefinitionFecther fetcher = new TypeDefinitionFecther(client);
+
+        Assert.assertTrue(fetcher.getDocTypesNames().contains("File"));
+        Assert.assertTrue(fetcher.getDocTypesNames().contains("DocumentRoute"));
+        Assert.assertTrue(fetcher.getDocTypesNames().contains("Workspace"));
+
+        List<String> schemas = fetcher.getSchemasForDocType("File");
+        Assert.assertTrue(schemas.contains("dublincore"));
+        Assert.assertTrue(schemas.contains("common"));
+        Assert.assertTrue(schemas.contains("file"));
+
+        JsonNode dcSchema = fetcher.getSchema("dublincore");
+        Assert.assertNotNull(dcSchema);
+
+        
+        System.out.print("Automation server started on " + client.getBaseUrl());
+        System.out.print(session.getOperations().size()
+                + " operations are deployed on the Nuxeo Server");
+    }
+    
     /**
      * Run the flow specified by name and assert equality on the expected output
      *

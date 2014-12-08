@@ -261,11 +261,11 @@ public class NuxeoConnector extends BaseDocumentService {
     public void connect(@ConnectionKey
     String username, @Password
     String password) throws ConnectionException {
-        AutomationClient client = new HttpAutomationClient(getServerUrl());
-        session = client.getSession(username, password);
+        HttpAutomationClient client = new HttpAutomationClient(getServerUrl());
+        client.setBasicAuth(username, password);
+        session = client.getSession();
         session.setDefaultSchemas(defaultSchemas);
-        docService = session.getAdapter(DocumentService.class);
-
+        docService = session.getAdapter(DocumentService.class);        
         logger.info("Connect Nuxeo Connector");
     }
 
